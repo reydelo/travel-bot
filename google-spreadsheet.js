@@ -34,6 +34,17 @@ function findMatchingRow(worksheet, email, cb) {
   });
 }
 
+function getTrainInfoForUser(email, cb) {
+
+  setAuth(() => {
+    getInfoAndWorksheets(info => {
+      const trainInfoSheet = info.worksheets[1];
+
+      findMatchingRow(trainInfoSheet, email, cb);
+    });
+  });
+}
+
 async function updateTrainInfo(formSubmission) {
   const rowData = {
     email: formSubmission.email,
@@ -49,7 +60,7 @@ async function updateTrainInfo(formSubmission) {
     getInfoAndWorksheets(info => {
       const trainInfoSheet = info.worksheets[1];
 
-      findMatchingRow(trainInfoSheet,  formSubmission.email, (row) => {
+      findMatchingRow(trainInfoSheet, formSubmission.email, (row) => {
         if (row) {
           for (let prop in rowData) {
             row[prop] = rowData[prop];
@@ -94,4 +105,4 @@ async function submitTravelRequest(formSubmission) {
 
 }
 
-module.exports = { submitTravelRequest, updateTrainInfo };
+module.exports = { submitTravelRequest, updateTrainInfo, getTrainInfoForUser };

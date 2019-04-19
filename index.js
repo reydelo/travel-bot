@@ -8,7 +8,7 @@ const axios = require('axios');
 const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constanants.js');
 const dialogElements = require('./dialog-elements.js');
 const users  = require('./users.js');
-const { submitTravelRequest, updateTrainInfo } = require('./google-spreadsheet');
+const { submitTravelRequest, updateTrainInfo, getTrainInfoForUser } = require('./google-spreadsheet');
 
 const app = express();
 
@@ -33,27 +33,21 @@ const respondWithEphemeral = (data) => {
       });
 };
 
-const postWithSlackDialog = (dialog, response) => {
+const postWithSlackDialog = (dialog) => {
     dialog.token = SLACK_ACCESS_TOKEN;
 
     axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify(dialog))
         .then((result) => {
             const { data } = result;
 
-            if (data.ok) {
-                response.send('');
-            } else {
-                console.log(data);
-                response.sendStatus(500);
-            }
+            if (!data.ok) console.log(data);
         }).catch((err) => {
             console.log({err})
-            response.sendStatus(500);
         });
 };
 
-app.post('/update-train-info', urlencodedParser, (req, res) => {
-    const { trigger_id } = req.body;
+app.post('/update-train-info', urlencodedParser, async (req, res) => {
+    const { trigger_id, user_id } = req.body;
     const {
       home_station,
       destination_station,
@@ -63,31 +57,40 @@ app.post('/update-train-info', urlencodedParser, (req, res) => {
       bahncard_number
     } = dialogElements;
 
-    // get defaults for user
+    res.send('Loading your data from Google Drive....');
+    
+    const slackUserEmail = await users
+    .findUser(user_id)
+    .then(result => result.data.user.profile.email);
 
-    const dialog = {
-        trigger_id,
-        dialog: JSON.stringify({
-            title: 'Update train defaults',
-            callback_id: slackCommands.updateTrainInfo,
-            submit_label: 'Submit',
-            elements: [
-                home_station,
-                destination_station,
-                home_departure_time,
-                destination_departure_time,
-                bahncard_type,
-                bahncard_number,
-            ]
-        })
-    };
+    getTrainInfoForUser(slackUserEmail, (row = {}) => {
+        const dialog = {
+            trigger_id,
+            dialog: JSON.stringify({
+                title: 'Update train defaults',
+                callback_id: slackCommands.updateTrainInfo,
+                submit_label: 'Submit',
+                elements: [
+                    { ...home_station, value: row.homestation},
+                    { ...destination_station, value: row.destinationstation },
+                    { ...home_departure_time, value: row.homedeparturetime },
+                    { ...destination_departure_time, value: row.destinationdeparturetime },
+                    { ...bahncard_type, value: row.bahncardtype },
+                    { ...bahncard_number, value: row.bahncardnumber },
+                ]
+            })
+        };
+    
+        postWithSlackDialog(dialog);
+    });
 
-    postWithSlackDialog(dialog, res);
 });
 
 app.post('/train-request', urlencodedParser, (req, res) => {
     const { trigger_id } = req.body;
     const { outward_date, return_date, travel_reason, travel_message } = dialogElements;
+
+    res.send("Loading your data from Google Drive....");
 
     const dialog = {
       trigger_id,
@@ -104,7 +107,7 @@ app.post('/train-request', urlencodedParser, (req, res) => {
       })
     };
 
-    postWithSlackDialog(dialog, res);
+    postWithSlackDialog(dialog);
 });
 
 app.post('/interactive', urlencodedParser, (req, res) => {

@@ -3,14 +3,12 @@ module.exports = {
     label: "BahnCard Number",
     type: "text",
     name: "bahncard_number",
-    value: "7081411182930772",
     optional: true
   },
   bahncard_type: {
     label: "BahnCard Type",
     type: "select",
     name: "bahncard_type",
-    value: "BahnCard 50",
     optional: true,
     options: [
       { label: "BahnCard 25", value: "BahnCard 25" },
@@ -25,33 +23,28 @@ module.exports = {
     label: "Train Station that you frequently visit",
     name: "destination_station",
     type: "text",
-    value: "Hamburg HBF"
   },
   destination_departure_time: {
     label: "Destination Departure Time",
     name: "destination_departure_time",
     type: "text",
     hint: "Format: 00:00 (24 Hour)",
-    value: "17:35",
   },
   home_departure_time: {
     label: "Home Departure Time",
     name: "home_departure_time",
     type: "text",
     hint: "Format: 00:00 (24 Hour)",
-    value: "07:40",
   },
   home_station: {
     label: "Train Station in your home city",
     name: "home_station",
     type: "text",
-    value: "Berlin HBF"
   },
   outward_arrival_station: {
     label: "Outward Journey Arrival Station",
     name: "outward_arrival_station",
     type: "text",
-    value: "Hamburg HBF"
   },
   outward_date: {
     label: "Outward Journey Date",
@@ -63,7 +56,6 @@ module.exports = {
     label: "Outward Journey Departure Station",
     name: "outward_departure_station",
     type: "text",
-    value: "Berlin HBF"
   },
   outward_departure_time: {
     label: "Outward Journey Departure Time",
