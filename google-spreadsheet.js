@@ -46,13 +46,13 @@ function findMatchingRow(worksheet, email) {
   });
 }
 
-function getTrainInfoForUser(email) {
-  return setAuth()
-    .then(getInfoAndWorksheets)
-    .then(({ worksheets: [_, trainInfoSheet] }) => findMatchingRow(trainInfoSheet, email));
+async function getTrainInfoForUser(email) {
+  await setAuth();
+  const { worksheets: [_, trainInfoSheet] } = await getInfoAndWorksheets();
+  return await findMatchingRow(trainInfoSheet, email);
 }
 
-function updateTrainInfo(formSubmission) {
+async function updateTrainInfo(formSubmission) {
   const rowData = {
     email: formSubmission.email,
     homestation: formSubmission.home_station,
@@ -63,28 +63,27 @@ function updateTrainInfo(formSubmission) {
     bahncardnumber: formSubmission.bahncard_number
   };
 
-  return setAuth()
-    .then(getInfoAndWorksheets)
-    .then(({ worksheets: [_, trainInfoSheet] }) => findMatchingRow(trainInfoSheet, formSubmission.email))
-    .then(row => {
-      if (row) {
-        for (let prop in rowData) {
-          row[prop] = rowData[prop];
+  await setAuth();
+  const { worksheets: [_, trainInfoSheet] } = await getInfoAndWorksheets();
+  const row = await findMatchingRow(trainInfoSheet, formSubmission.email);
+
+  if (row) {
+    for (let prop in rowData) {
+      row[prop] = rowData[prop];
+    }
+    row.save();
+  } else {
+    await new Promise((resolve, reject) => {
+      trainInfoSheet.addRow(rowData, (err, row) => {
+        if (err) {
+          reject(new Error("failed to update spreadsheet"));
+          return;
         }
         row.save();
-      } else {
-        return new Promise((resolve, reject) => {
-          trainInfoSheet.addRow(rowData, (err, row) => {
-            if (err) {
-              reject(new Error("failed to update spreadsheet"));
-              return;
-            }
-            row.save();
-            resolve();
-          });
-        });
-      }
+        resolve();
+      });
     });
+  }
 }
 
 function submitTravelRequest(formSubmission) {
