@@ -63,32 +63,28 @@ function updateTrainInfo(formSubmission) {
     bahncardnumber: formSubmission.bahncard_number
   };
 
-  return new Promise((resolve, reject) => {
-    setAuth().then(() => {
-      getInfoAndWorksheets().then(info => {
-        const trainInfoSheet = info.worksheets[1];
-
-        findMatchingRow(trainInfoSheet, formSubmission.email).then(row => {
-          if (row) {
-            for (let prop in rowData) {
-              row[prop] = rowData[prop];
+  return setAuth()
+    .then(getInfoAndWorksheets)
+    .then(({ worksheets: [_, trainInfoSheet] }) => findMatchingRow(trainInfoSheet, formSubmission.email))
+    .then(row => {
+      if (row) {
+        for (let prop in rowData) {
+          row[prop] = rowData[prop];
+        }
+        row.save();
+      } else {
+        return new Promise((resolve, reject) => {
+          trainInfoSheet.addRow(rowData, (err, row) => {
+            if (err) {
+              reject(new Error("failed to update spreadsheet"));
+              return;
             }
             row.save();
             resolve();
-          } else {
-            trainInfoSheet.addRow(rowData, (err, row) => {
-              if (err) {
-                reject(new Error("failed to update spreadsheet"));
-                return;
-              }
-              row.save();
-              resolve();
-            });
-          }
-        }).catch(reject);
-      }).catch(reject);
-    }).catch(reject);
-  })
+          });
+        });
+      }
+    });
 }
 
 function submitTravelRequest(formSubmission) {
