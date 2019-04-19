@@ -86,7 +86,7 @@ async function updateTrainInfo(formSubmission) {
   }
 }
 
-function submitTravelRequest(formSubmission) {
+async function submitTravelRequest(formSubmission) {
   const rowData = {
     timestamp: Date.now(),
     email: formSubmission.email,
@@ -97,20 +97,19 @@ function submitTravelRequest(formSubmission) {
     travelmessage: formSubmission.travel_message
   };
 
-  return setAuth()
-    .then(getInfoAndWorksheets)
-    .then(({ worksheets: [travelRequestSheet]}) => {
-      return new Promise((resolve, reject) => {
-        travelRequestSheet.addRow(rowData, (err, row) => {
-          if (err) {
-            reject(new Error("failed to update spreadsheet"));
-            return;
-          }
-          row.save();
-          resolve();
-        });
-      })
-    })
+  await setAuth();
+  const { worksheets: [travelRequestSheet]} = await getInfoAndWorksheets();
+
+  return await new Promise((resolve, reject) => {
+    travelRequestSheet.addRow(rowData, (err, row) => {
+      if (err) {
+        reject(new Error("failed to update spreadsheet"));
+        return;
+      }
+      row.save();
+      resolve();
+    });
+  });
 }
 
 module.exports = { submitTravelRequest, updateTrainInfo, getTrainInfoForUser };
