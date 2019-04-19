@@ -83,6 +83,7 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
     
         postWithSlackDialog(dialog);
     }).catch(err => {
+        console.log('error in getTrainInfoForUser');
         /*
         respondWithEphemeral({
             token: SLACK_ACCESS_TOKEN,
@@ -163,14 +164,22 @@ const processTrainInfo = async (data) => {
     .findUser(user.id)
     .then(result => result.data.user.profile.email);
 
-    updateTrainInfo({ ...submission, email: slackUserEmail});
-
-    respondWithEphemeral({
-        token: SLACK_ACCESS_TOKEN,
-        text: "Train defaults successfully updated",
-        channel: channel.id,
-        as_user: false,
-        user: user.id
+    updateTrainInfo({ ...submission, email: slackUserEmail}).then(() => {
+        respondWithEphemeral({
+            token: SLACK_ACCESS_TOKEN,
+            text: "Train defaults successfully updated",
+            channel: channel.id,
+            as_user: false,
+            user: user.id
+        });
+    }).catch(err => {
+        respondWithEphemeral({
+            token: SLACK_ACCESS_TOKEN,
+            text: "Error processing train info",
+            channel: channel.id,
+            as_user: false,
+            user: user.id
+        });
     });
 
 };

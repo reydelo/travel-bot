@@ -58,7 +58,7 @@ function getTrainInfoForUser(email) {
   });
 }
 
-async function updateTrainInfo(formSubmission) {
+function updateTrainInfo(formSubmission) {
   const rowData = {
     email: formSubmission.email,
     homestation: formSubmission.home_station,
@@ -69,28 +69,32 @@ async function updateTrainInfo(formSubmission) {
     bahncardnumber: formSubmission.bahncard_number
   };
 
-  setAuth().then(() => {
-    getInfoAndWorksheets().then(info => {
-      const trainInfoSheet = info.worksheets[1];
+  return new Promise((resolve, reject) => {
+    setAuth().then(() => {
+      getInfoAndWorksheets().then(info => {
+        const trainInfoSheet = info.worksheets[1];
 
-      findMatchingRow(trainInfoSheet, formSubmission.email).then(row => {
-        if (row) {
-          for (let prop in rowData) {
-            row[prop] = rowData[prop];
-          }
-          row.save();
-        } else {
-          trainInfoSheet.addRow(rowData, (err, row) => {
-            if (err) {
-              console.log({ err });
-              throw new Error("failed to update spreadsheet");
+        findMatchingRow(trainInfoSheet, formSubmission.email).then(row => {
+          if (row) {
+            for (let prop in rowData) {
+              row[prop] = rowData[prop];
             }
             row.save();
-          });
-        }
-      });
-    });
-  });
+            resolve();
+          } else {
+            trainInfoSheet.addRow(rowData, (err, row) => {
+              if (err) {
+                console.log({ err });
+                reject(new Error("failed to update spreadsheet"));
+              }
+              row.save();
+              resolve();
+            });
+          }
+        }).catch(reject);
+      }).catch(reject);
+    }).catch(reject);
+  })
 }
 
 async function submitTravelRequest(formSubmission) {
