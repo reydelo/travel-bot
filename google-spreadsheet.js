@@ -10,14 +10,16 @@ const slackCommands = {
   updateTrainInfo: "update_train_info"
 };
 
-function setAuth(cb) {
-  doc.useServiceAccountAuth(credentials, function(err) {
-    if (err) {
-      throw new Error("failed to authenticate");
-    }
-    cb();
+function setAuth() {
+  return new Promise((resolve, reject) => {
+    doc.useServiceAccountAuth(credentials, function(err) {
+      if (err) {
+        reject(new Error("failed to authenticate"));
+      }
+      resolve();
+    });
   });
-};
+}
 
 function getInfoAndWorksheets(cb) {
   doc.getInfo(function(err, info) {
@@ -36,7 +38,7 @@ function findMatchingRow(worksheet, email, cb) {
 
 function getTrainInfoForUser(email, cb) {
 
-  setAuth(() => {
+  setAuth().then(() => {
     getInfoAndWorksheets(info => {
       const trainInfoSheet = info.worksheets[1];
 
@@ -56,11 +58,11 @@ async function updateTrainInfo(formSubmission) {
     bahncardnumber: formSubmission.bahncard_number
   };
 
-  setAuth(() => {
+  setAuth().then(() => {
     getInfoAndWorksheets(info => {
       const trainInfoSheet = info.worksheets[1];
 
-      findMatchingRow(trainInfoSheet, formSubmission.email, (row) => {
+      findMatchingRow(trainInfoSheet, formSubmission.email, row => {
         if (row) {
           for (let prop in rowData) {
             row[prop] = rowData[prop];
@@ -76,8 +78,7 @@ async function updateTrainInfo(formSubmission) {
           });
         }
       });
-
-    })
+    });
   });
 }
 
@@ -92,7 +93,7 @@ async function submitTravelRequest(formSubmission) {
     travelmessage: formSubmission.travel_message
   };
 
-  setAuth(() => {
+  setAuth().then(() => {
     getInfoAndWorksheets(info => {
       const travelRequestSheet = info.worksheets[0];
 
@@ -100,8 +101,8 @@ async function submitTravelRequest(formSubmission) {
         if (err) throw new Error("failed to update spreadsheet");
         row.save();
       });
-    })
-  })
+    });
+  });
 
 }
 
