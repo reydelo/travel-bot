@@ -1,0 +1,7 @@
+module.exports = {
+    PORT: 4390,
+    SLACK_ACCESS_TOKEN: "xoxb-4675652631-591616513041-WqAWgMKX39Zdr7ca51pddaE3",
+    SLACK_API_URL: "https://slack.com/api",
+    SLACK_CLIENT_ID: "4675652631.600030416772",
+    SLACK_CLIENT_SECRET: "94f6929ed276bcbb04eb7cac1161dc73"
+};

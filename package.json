@@ -1,0 +1,23 @@
+{
+  "name": "travel-bot",
+  "version": "1.0.0",
+  "description": "A slack app travel assistant for booking trains and accommodation",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sheet": "node google-spreadsheet.js"
+  },
+  "author": "reyna.deloge@joblift.de",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "debug": "^4.1.1",
+    "express": "^4.16.4",
+    "google-spreadsheet": "^2.0.7",
+    "googleapis": "^27.0.0",
+    "querystring": "^0.2.0",
+    "request": "^2.88.0"
+  }
+}

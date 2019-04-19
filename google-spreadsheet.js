@@ -1,0 +1,117 @@
+const async = require("async");
+const GoogleSpreadsheet = require("google-spreadsheet");
+const credentials = require("./google-generated-credentials.json");
+
+const spreadsheetKey = "1JuY40Zn3JtRZdbeBxD24GJYZw_469VpsSB8aYkfKSfs";
+const spreadsheetKeyTest = "1F-80ym95Ti4GS7swrBFlQHAN0YPi893-3n3BoSEqjk4";
+const doc = new GoogleSpreadsheet(spreadsheetKeyTest);
+
+// let worksheets;
+// let travelRequestSheet;
+// let trainInfoSheet;
+
+// travelRequestSheet = info.worksheets[0];
+// trainInfoSheet = info.worksheets[1];
+
+const slackCommands = {
+  requestTrain: "request_train",
+  updateTrainInfo: "update_train_info"
+};
+
+const testData = {
+  home_station: "Berlin HBF",
+  destination_station: "Hamburg HBF",
+  home_departure_time: "07:40",
+  destination_departure_time: "17:35",
+  bahncard_type: "BahnCard Business 100",
+  bahncard_number: "7081411182930772",
+  email: "userexample@joblift.de"
+};
+
+function setAuth(cb) {
+  doc.useServiceAccountAuth(credentials, function(err) {
+    if (err) {
+      throw new Error("failed to authenticate");
+    }
+    cb();
+  });
+};
+
+// output docs info
+function getInfoAndWorksheets(cb) {
+  doc.getInfo(function(err, info) {
+    if (err) {
+      throw new Error("failed to connect to spreadsheet");
+    }
+    cb(info);
+  });
+}
+
+function findMatchingRow(worksheet, email, cb) {
+  worksheet.getRows({}, (err, rows) => {
+    cb(rows.find(row => row.email === email));
+  });
+}
+
+async function updateTrainInfo(formSubmission) {
+  const rowData = {
+    email: formSubmission.email,
+    homestation: formSubmission.home_station,
+    destinationstation: formSubmission.destination_station,
+    homedeparturetime: formSubmission.home_departure_time,
+    destinationdeparturetime: formSubmission.destination_departure_time,
+    bahncardtype: formSubmission.bahncard_type,
+    bahncardnumber: formSubmission.bahncard_number
+  };
+
+  setAuth(() => {
+    getInfoAndWorksheets(info => {
+      const trainInfoSheet = info.worksheets[1];
+
+      findMatchingRow(trainInfoSheet,  formSubmission.email, (row) => {
+        if (row) {
+          for (let prop in rowData) {
+            row[prop] = rowData[prop];
+          }
+          row.save();
+        } else {
+          trainInfoSheet.addRow(rowData, (err, row) => {
+            if (err) {
+              console.log({ err });
+              throw new Error("failed to update spreadsheet");
+            }
+            row.save();
+          });
+        }
+      });
+
+    })
+  });
+}
+
+async function submitTravelRequest(formSubmission, sheet) {
+  const rowData = {
+    timestamp: Date.now(),
+    email: formSubmission.email,
+    traveltype: formSubmission.travel_type,
+    outwarddate: formSubmission.outward_date,
+    returndate: formSubmission.return_date,
+    travelreason: formSubmission.travel_reason,
+    travelmessage: formSubmission.travel_message
+  };
+
+  sheet.addRow(rowData, (err, row) => {
+    if (err) throw new Error("failed to update spreadsheet");
+    row.save();
+  });
+}
+
+const doGoogle = (formSubmission, action) => {
+  if (action === slackCommands.requestTrain) {
+    submitTravelRequest(formSubmission, travelRequestSheet);
+  } else if (action === slackCommands.updateTrainInfo) {
+    updateTrainInfo(formSubmission);
+  }
+};
+
+module.exports = { doGoogle };
