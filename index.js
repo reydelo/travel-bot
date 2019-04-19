@@ -8,7 +8,7 @@ const axios = require('axios');
 const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constanants.js');
 const dialogElements = require('./dialog-elements.js');
 const users  = require('./users.js');
-const { doGoogle, submitTravelRequest } = require('./google-spreadsheet');
+const { submitTravelRequest, updateTrainInfo } = require('./google-spreadsheet');
 
 const app = express();
 
@@ -120,7 +120,7 @@ app.post('/interactive', urlencodedParser, (req, res) => {
     }
 
     if (callbackId === slackCommands.updateTrainInfo) {
-        updateTrainInfo(payload);
+        processTrainInfo(payload);
     }
 });
 
@@ -131,7 +131,7 @@ const processTrainRequest = async (data) => {
     .findUser(user.id)
     .then(result => result.data.user.profile.email);
 
-    doGoogle({ ...submission, email: slackUserEmail, travel_type: 'train'}, data.callback_id);
+    submitTravelRequest({ ...submission, email: slackUserEmail, travel_type: 'train'});
 
     respondWithEphemeral({
       token: SLACK_ACCESS_TOKEN,
@@ -143,14 +143,14 @@ const processTrainRequest = async (data) => {
 
 };
 
-const updateTrainInfo = async (data) => {
+const processTrainInfo = async (data) => {
     const { channel, user, submission } = data;
 
     const slackUserEmail = await users
     .findUser(user.id)
     .then(result => result.data.user.profile.email);
 
-    doGoogle({ ...submission, email: slackUserEmail}, data.callback_id);
+    updateTrainInfo({ ...submission, email: slackUserEmail});
 
     respondWithEphemeral({
         token: SLACK_ACCESS_TOKEN,

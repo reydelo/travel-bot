@@ -1,4 +1,3 @@
-const async = require("async");
 const GoogleSpreadsheet = require("google-spreadsheet");
 const credentials = require("./google-generated-credentials.json");
 
@@ -11,16 +10,6 @@ const slackCommands = {
   updateTrainInfo: "update_train_info"
 };
 
-const testData = {
-  home_station: "Berlin HBF",
-  destination_station: "Hamburg HBF",
-  home_departure_time: "07:40",
-  destination_departure_time: "17:35",
-  bahncard_type: "BahnCard Business 100",
-  bahncard_number: "7081411182930772",
-  email: "userexample@joblift.de"
-};
-
 function setAuth(cb) {
   doc.useServiceAccountAuth(credentials, function(err) {
     if (err) {
@@ -30,7 +19,6 @@ function setAuth(cb) {
   });
 };
 
-// output docs info
 function getInfoAndWorksheets(cb) {
   doc.getInfo(function(err, info) {
     if (err) {
@@ -106,12 +94,4 @@ async function submitTravelRequest(formSubmission) {
 
 }
 
-const doGoogle = (formSubmission, action) => {
-  if (action === slackCommands.requestTrain) {
-    submitTravelRequest(formSubmission);
-  } else if (action === slackCommands.updateTrainInfo) {
-    updateTrainInfo(formSubmission);
-  }
-};
-
-module.exports = { doGoogle };
+module.exports = { submitTravelRequest, updateTrainInfo };
