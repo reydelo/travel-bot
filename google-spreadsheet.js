@@ -6,13 +6,6 @@ const spreadsheetKey = "1JuY40Zn3JtRZdbeBxD24GJYZw_469VpsSB8aYkfKSfs";
 const spreadsheetKeyTest = "1F-80ym95Ti4GS7swrBFlQHAN0YPi893-3n3BoSEqjk4";
 const doc = new GoogleSpreadsheet(spreadsheetKeyTest);
 
-// let worksheets;
-// let travelRequestSheet;
-// let trainInfoSheet;
-
-// travelRequestSheet = info.worksheets[0];
-// trainInfoSheet = info.worksheets[1];
-
 const slackCommands = {
   requestTrain: "request_train",
   updateTrainInfo: "update_train_info"
@@ -89,7 +82,7 @@ async function updateTrainInfo(formSubmission) {
   });
 }
 
-async function submitTravelRequest(formSubmission, sheet) {
+async function submitTravelRequest(formSubmission) {
   const rowData = {
     timestamp: Date.now(),
     email: formSubmission.email,
@@ -100,15 +93,22 @@ async function submitTravelRequest(formSubmission, sheet) {
     travelmessage: formSubmission.travel_message
   };
 
-  sheet.addRow(rowData, (err, row) => {
-    if (err) throw new Error("failed to update spreadsheet");
-    row.save();
-  });
+  setAuth(() => {
+    getInfoAndWorksheets(info => {
+      const travelRequestSheet = info.worksheets[0];
+
+      travelRequestSheet.addRow(rowData, (err, row) => {
+        if (err) throw new Error("failed to update spreadsheet");
+        row.save();
+      });
+    })
+  })
+
 }
 
 const doGoogle = (formSubmission, action) => {
   if (action === slackCommands.requestTrain) {
-    submitTravelRequest(formSubmission, travelRequestSheet);
+    submitTravelRequest(formSubmission);
   } else if (action === slackCommands.updateTrainInfo) {
     updateTrainInfo(formSubmission);
   }
