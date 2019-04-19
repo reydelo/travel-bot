@@ -21,12 +21,14 @@ function setAuth() {
   });
 }
 
-function getInfoAndWorksheets(cb) {
-  doc.getInfo(function(err, info) {
-    if (err) {
-      throw new Error("failed to connect to spreadsheet");
-    }
-    cb(info);
+function getInfoAndWorksheets() {
+  return new Promise((resolve, reject) => {
+    doc.getInfo(function(err, info) {
+      if (err) {
+        reject(new Error("failed to connect to spreadsheet"));
+      }
+      resolve(info);
+    });
   });
 }
 
@@ -39,7 +41,7 @@ function findMatchingRow(worksheet, email, cb) {
 function getTrainInfoForUser(email, cb) {
 
   setAuth().then(() => {
-    getInfoAndWorksheets(info => {
+    getInfoAndWorksheets().then(info => {
       const trainInfoSheet = info.worksheets[1];
 
       findMatchingRow(trainInfoSheet, email, cb);
@@ -59,7 +61,7 @@ async function updateTrainInfo(formSubmission) {
   };
 
   setAuth().then(() => {
-    getInfoAndWorksheets(info => {
+    getInfoAndWorksheets().then(info => {
       const trainInfoSheet = info.worksheets[1];
 
       findMatchingRow(trainInfoSheet, formSubmission.email, row => {
@@ -94,7 +96,7 @@ async function submitTravelRequest(formSubmission) {
   };
 
   setAuth().then(() => {
-    getInfoAndWorksheets(info => {
+    getInfoAndWorksheets().then(info => {
       const travelRequestSheet = info.worksheets[0];
 
       travelRequestSheet.addRow(rowData, (err, row) => {
