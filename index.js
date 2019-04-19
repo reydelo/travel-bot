@@ -63,7 +63,7 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
     .findUser(user_id)
     .then(result => result.data.user.profile.email);
 
-    getTrainInfoForUser(slackUserEmail, (row = {}) => {
+    getTrainInfoForUser(slackUserEmail).then((row = {}) => {
         const dialog = {
             trigger_id,
             dialog: JSON.stringify({
@@ -82,6 +82,16 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
         };
     
         postWithSlackDialog(dialog);
+    }).catch(err => {
+        /*
+        respondWithEphemeral({
+            token: SLACK_ACCESS_TOKEN,
+            text: "Error while getting train info",
+            channel: channel.id, // TODO
+            as_user: false,
+            user: user_id
+        });
+        */
     });
 
 });

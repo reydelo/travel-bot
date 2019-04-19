@@ -15,6 +15,7 @@ function setAuth() {
     doc.useServiceAccountAuth(credentials, function(err) {
       if (err) {
         reject(new Error("failed to authenticate"));
+        return;
       }
       resolve();
     });
@@ -26,26 +27,34 @@ function getInfoAndWorksheets() {
     doc.getInfo(function(err, info) {
       if (err) {
         reject(new Error("failed to connect to spreadsheet"));
+        return;
       }
       resolve(info);
     });
   });
 }
 
-function findMatchingRow(worksheet, email, cb) {
-  worksheet.getRows({}, (err, rows) => {
-    cb(rows.find(row => row.email === email));
+function findMatchingRow(worksheet, email) {
+  return new Promise((resolve, reject) => {
+    worksheet.getRows({}, (err, rows) => {
+      if (err) {
+        reject(new Error("failed to get rows from spreadsheet"));
+        return;
+      }
+      resolve(rows.find(row => row.email === email));
+    });
   });
 }
 
-function getTrainInfoForUser(email, cb) {
-
-  setAuth().then(() => {
-    getInfoAndWorksheets().then(info => {
-      const trainInfoSheet = info.worksheets[1];
-
-      findMatchingRow(trainInfoSheet, email, cb);
-    });
+function getTrainInfoForUser(email) {
+  return new Promise((resolve, reject) => {
+    setAuth().then(() => {
+      getInfoAndWorksheets().then(info => {
+        const trainInfoSheet = info.worksheets[1];
+  
+        findMatchingRow(trainInfoSheet, email).then(resolve).catch(reject);
+      }).catch(reject);
+    }).catch(reject);
   });
 }
 
@@ -64,7 +73,7 @@ async function updateTrainInfo(formSubmission) {
     getInfoAndWorksheets().then(info => {
       const trainInfoSheet = info.worksheets[1];
 
-      findMatchingRow(trainInfoSheet, formSubmission.email, row => {
+      findMatchingRow(trainInfoSheet, formSubmission.email).then(row => {
         if (row) {
           for (let prop in rowData) {
             row[prop] = rowData[prop];
