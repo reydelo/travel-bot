@@ -84,8 +84,8 @@ function updateTrainInfo(formSubmission) {
           } else {
             trainInfoSheet.addRow(rowData, (err, row) => {
               if (err) {
-                console.log({ err });
                 reject(new Error("failed to update spreadsheet"));
+                return;
               }
               row.save();
               resolve();
@@ -97,7 +97,7 @@ function updateTrainInfo(formSubmission) {
   })
 }
 
-async function submitTravelRequest(formSubmission) {
+function submitTravelRequest(formSubmission) {
   const rowData = {
     timestamp: Date.now(),
     email: formSubmission.email,
@@ -108,17 +108,22 @@ async function submitTravelRequest(formSubmission) {
     travelmessage: formSubmission.travel_message
   };
 
-  setAuth().then(() => {
-    getInfoAndWorksheets().then(info => {
-      const travelRequestSheet = info.worksheets[0];
+  return new Promise((resolve, reject) => {
+    setAuth().then(() => {
+      getInfoAndWorksheets().then(info => {
+        const travelRequestSheet = info.worksheets[0];
 
-      travelRequestSheet.addRow(rowData, (err, row) => {
-        if (err) throw new Error("failed to update spreadsheet");
-        row.save();
-      });
-    });
+        travelRequestSheet.addRow(rowData, (err, row) => {
+          if (err) {
+            reject(new Error("failed to update spreadsheet"));
+            return;
+          }
+          row.save();
+          resolve();
+        });
+      }).catch(reject);
+    }).catch(reject);
   });
-
 }
 
 module.exports = { submitTravelRequest, updateTrainInfo, getTrainInfoForUser };

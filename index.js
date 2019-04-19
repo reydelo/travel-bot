@@ -145,15 +145,24 @@ const processTrainRequest = async (data) => {
     .findUser(user.id)
     .then(result => result.data.user.profile.email);
 
-    submitTravelRequest({ ...submission, email: slackUserEmail, travel_type: 'train'});
-
-    respondWithEphemeral({
-      token: SLACK_ACCESS_TOKEN,
-      text: "Train Request successfully submitted",
-      channel: channel.id,
-      as_user: false,
-      user: user.id
+    submitTravelRequest({ ...submission, email: slackUserEmail, travel_type: 'train'}).then(() => {
+        respondWithEphemeral({
+            token: SLACK_ACCESS_TOKEN,
+            text: "Train Request successfully submitted",
+            channel: channel.id,
+            as_user: false,
+            user: user.id
+        });
+    }).catch(err => {
+        respondWithEphemeral({
+            token: SLACK_ACCESS_TOKEN,
+            text: "Error processing train request",
+            channel: channel.id,
+            as_user: false,
+            user: user.id
+        });
     });
+
 
 };
 
