@@ -98,11 +98,10 @@ function submitTravelRequest(formSubmission) {
     travelmessage: formSubmission.travel_message
   };
 
-  return new Promise((resolve, reject) => {
-    setAuth().then(() => {
-      getInfoAndWorksheets().then(info => {
-        const travelRequestSheet = info.worksheets[0];
-
+  return setAuth()
+    .then(getInfoAndWorksheets)
+    .then(({ worksheets: [travelRequestSheet]}) => {
+      return new Promise((resolve, reject) => {
         travelRequestSheet.addRow(rowData, (err, row) => {
           if (err) {
             reject(new Error("failed to update spreadsheet"));
@@ -111,9 +110,8 @@ function submitTravelRequest(formSubmission) {
           row.save();
           resolve();
         });
-      }).catch(reject);
-    }).catch(reject);
-  });
+      })
+    })
 }
 
 module.exports = { submitTravelRequest, updateTrainInfo, getTrainInfoForUser };
