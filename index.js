@@ -47,7 +47,7 @@ const postWithSlackDialog = (dialog) => {
 };
 
 app.post('/update-train-info', urlencodedParser, async (req, res) => {
-    const { trigger_id, user_id } = req.body;
+    const { trigger_id, user_id, channel_id } = req.body;
     const {
       home_station,
       destination_station,
@@ -83,16 +83,13 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
     
         postWithSlackDialog(dialog);
     }).catch(err => {
-        console.log('error in getTrainInfoForUser');
-        /*
         respondWithEphemeral({
             token: SLACK_ACCESS_TOKEN,
             text: "Error while getting train info",
-            channel: channel.id, // TODO
+            channel: channel_id,
             as_user: false,
             user: user_id
         });
-        */
     });
 
 });
@@ -162,8 +159,6 @@ const processTrainRequest = async (data) => {
             user: user.id
         });
     });
-
-
 };
 
 const processTrainInfo = async (data) => {

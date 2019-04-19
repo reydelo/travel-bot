@@ -47,15 +47,9 @@ function findMatchingRow(worksheet, email) {
 }
 
 function getTrainInfoForUser(email) {
-  return new Promise((resolve, reject) => {
-    setAuth().then(() => {
-      getInfoAndWorksheets().then(info => {
-        const trainInfoSheet = info.worksheets[1];
-  
-        findMatchingRow(trainInfoSheet, email).then(resolve).catch(reject);
-      }).catch(reject);
-    }).catch(reject);
-  });
+  return setAuth()
+    .then(getInfoAndWorksheets)
+    .then(({ worksheets: [_, trainInfoSheet] }) => findMatchingRow(trainInfoSheet, email));
 }
 
 function updateTrainInfo(formSubmission) {
