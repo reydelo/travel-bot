@@ -52,3 +52,16 @@ To run this app in your own workspace, follow these steps:
     - Add the "Bot User OAUth Access Token to constants.js
     - Add the scopes "commands, users:read, users:read.email, chat:write"
 1. If everything is set up correctly, you should be able to run `/train-request` and `/update-train-info` from your slack workspace
+
+---
+
+## Google Sheets API Setup
+
+[Example Spreadsheet](https://docs.google.com/spreadsheets/d/1huFK5vLC6luhdxMXq5lSmAIdv9oyHEAM0NE3SuHkc74/)
+
+1. Follow the [authentication documentation](https://theoephraim.github.io/node-google-spreadsheet/#/getting-started/authentication) for `google-spreadsheet`
+    - Create a service account
+1. Add the google-generated-credentials to the app
+1. Create a spreadsheet with (list) columns.
+    - Add the spreadsheet ID to constants.js
+    - Share the spreadsheet with the service account
