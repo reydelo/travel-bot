@@ -15,8 +15,8 @@
     "body-parser": "^1.18.3",
     "debug": "^4.1.1",
     "express": "^4.16.4",
-    "google-spreadsheet": "^2.0.7",
-    "googleapis": "^27.0.0",
+    "google-spreadsheet": "^3.0.11",
+    "googleapis": "^52.1.0",
     "querystring": "^0.2.0",
     "request": "^2.88.0"
   }

@@ -5,14 +5,12 @@ const bodyParser = require('body-parser');
 const qs = require('querystring');
 const axios = require('axios');
 
-const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constanants.js');
+const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constants.js');
 const dialogElements = require('./dialog-elements.js');
 const users  = require('./users.js');
 const { submitTravelRequest, updateTrainInfo, getTrainInfoForUser } = require('./google-spreadsheet');
 
 const app = express();
-
-const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 const slackCommands = {
@@ -26,24 +24,29 @@ app.listen(PORT, () => {
 
 const respondWithEphemeral = (data) => {
 
-    axios
+    return axios
       .post(`${SLACK_API_URL}/chat.postEphemeral`, qs.stringify(data))
+      .then((result) => {
+          if (result.data.ok === false) {
+            console.error(result.data);
+            throw new Error(`Error chat.postEphemeral: ${result.data.error}`);
+        }
+    })
       .catch(err => {
-        console.log({ err });
+        throw new Error(err.message);
       });
 };
 
 const postWithSlackDialog = (dialog) => {
-    dialog.token = SLACK_ACCESS_TOKEN;
-
-    axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify(dialog))
+    return axios.post(`${SLACK_API_URL}/dialog.open`, qs.stringify({ ...dialog, token: SLACK_ACCESS_TOKEN }))
         .then((result) => {
-            const { data } = result;
-
-            if (!data.ok) console.log(data);
+            if (result.data.ok === false) {
+                console.error(result.data);
+                throw new Error(`Error dialog.open: ${result.data.error}`);
+            }
         })
         .catch((err) => {
-            console.log({postWithSlackDialog: err})
+            throw new Error(err.message);
         });
 };
 
@@ -59,7 +62,7 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
     } = dialogElements;
 
     res.send('Loading your data from Google Drive....');
-    
+
     const slackUserEmail = await users
     .findUser(user_id)
     .then(result => result.data.user.profile.email);
@@ -82,7 +85,7 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
                     ]
                 })
             };
-        
+
             postWithSlackDialog(dialog);
         })
         .catch(err => {
@@ -90,7 +93,6 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
                 token: SLACK_ACCESS_TOKEN,
                 text: "Error while getting train info",
                 channel: channel_id,
-                as_user: false,
                 user: user_id
             });
         });
@@ -100,8 +102,6 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
 app.post('/train-request', urlencodedParser, (req, res) => {
     const { trigger_id } = req.body;
     const { outward_date, return_date, travel_reason, travel_message } = dialogElements;
-
-    res.send("Loading your data from Google Drive....");
 
     const dialog = {
       trigger_id,
@@ -127,7 +127,7 @@ app.post('/interactive', urlencodedParser, (req, res) => {
     res.send('');
 
     const payload = JSON.parse(req.body.payload);
-    const { callback_id: callbackId, channel } = payload;
+    const { callback_id: callbackId } = payload;
 
     if (callbackId === slackCommands.requestTrain) {
         processTrainRequest(payload);
@@ -138,30 +138,35 @@ app.post('/interactive', urlencodedParser, (req, res) => {
     }
 });
 
-const processTrainRequest = async (data) => {
-    const { channel, user, submission } = data;
+const processTrainRequest = async ({ channel, user, submission }) => {
 
     const slackUserEmail = await users
     .findUser(user.id)
-    .then(result => result.data.user.profile.email);
+    .then(({ data }) => {
+        if (data.ok === false) {
+            console.error(data);
+            throw new Error(`Error processing train request: ${data.error}`);
+        }
+        if (!data.user.profile.email) {
+            throw new Error(`Error retrieiving slack user email`);
+        }
+        return data.user.profile.email;
+    })
 
     submitTravelRequest({ ...submission, email: slackUserEmail, travel_type: 'train'})
         .then(() => {
-            respondWithEphemeral({
+            return respondWithEphemeral({
                 token: SLACK_ACCESS_TOKEN,
                 text: "Train Request successfully submitted",
                 channel: channel.id,
-                as_user: false,
                 user: user.id
             });
         })
-        .catch(err => {
-            debugger;
-            respondWithEphemeral({
+        .catch(error => {
+            return respondWithEphemeral({
                 token: SLACK_ACCESS_TOKEN,
-                text: "Error processing train request",
+                text: `Error processing train request: ${error.message}`,
                 channel: channel.id,
-                as_user: false,
                 user: user.id
             });
         });
@@ -180,16 +185,14 @@ const processTrainInfo = async (data) => {
                 token: SLACK_ACCESS_TOKEN,
                 text: "Train defaults successfully updated",
                 channel: channel.id,
-                as_user: false,
                 user: user.id
             });
         })
         .catch(err => {
             respondWithEphemeral({
                 token: SLACK_ACCESS_TOKEN,
-                text: "Error processing train info",
+                text: `Error processing train info ${err.message}`,
                 channel: channel.id,
-                as_user: false,
                 user: user.id
             });
         });

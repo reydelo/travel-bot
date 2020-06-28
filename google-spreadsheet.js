@@ -1,54 +1,27 @@
-const GoogleSpreadsheet = require("google-spreadsheet");
+const { GoogleSpreadsheet } = require("google-spreadsheet");
+
 const credentials = require("./google-generated-credentials.json");
+const { GOOGLE_SPREADSHEET_KEY } = require("./constants.js");
 
-const spreadsheetKey = "1JuY40Zn3JtRZdbeBxD24GJYZw_469VpsSB8aYkfKSfs";
-const spreadsheetKeyTest = "1F-80ym95Ti4GS7swrBFlQHAN0YPi893-3n3BoSEqjk4";
-const doc = new GoogleSpreadsheet(spreadsheetKeyTest);
+const doc = new GoogleSpreadsheet(GOOGLE_SPREADSHEET_KEY);
 
-const slackCommands = {
-  requestTrain: "request_train",
-  updateTrainInfo: "update_train_info"
-};
-
-function setAuth() {
-  return new Promise((resolve, reject) => {
-    doc.useServiceAccountAuth(credentials, function(err) {
-      if (err) {
-        reject(new Error("failed to authenticate"));
-        return;
-      }
-      resolve();
-    });
-  });
+async function setAuth() {
+  await doc.useServiceAccountAuth(credentials);
 }
 
-function getInfoAndWorksheets() {
-  return new Promise((resolve, reject) => {
-    doc.getInfo(function(err, info) {
-      if (err) {
-        reject(new Error("failed to connect to spreadsheet"));
-        return;
-      }
-      resolve(info);
-    });
-  });
+async function getWorksheets() {
+  await doc.loadInfo();
+  return doc.sheetsByIndex;
 }
 
-function findMatchingRow(worksheet, email) {
-  return new Promise((resolve, reject) => {
-    worksheet.getRows({}, (err, rows) => {
-      if (err) {
-        reject(new Error("failed to get rows from spreadsheet"));
-        return;
-      }
-      resolve(rows.find(row => row.email === email));
-    });
-  });
+async function findMatchingRow(worksheet, email) {
+  const rows = await worksheet.getRows();
+  return rows.find(row => row.email === email);
 }
 
 async function getTrainInfoForUser(email) {
   await setAuth();
-  const { worksheets: [_, trainInfoSheet] } = await getInfoAndWorksheets();
+  const [_, trainInfoSheet] = await getWorksheets();
   return await findMatchingRow(trainInfoSheet, email);
 }
 
@@ -64,7 +37,7 @@ async function updateTrainInfo(formSubmission) {
   };
 
   await setAuth();
-  const { worksheets: [_, trainInfoSheet] } = await getInfoAndWorksheets();
+  const [_, trainInfoSheet] = await getWorksheets();
   const row = await findMatchingRow(trainInfoSheet, formSubmission.email);
 
   if (row) {
@@ -73,16 +46,7 @@ async function updateTrainInfo(formSubmission) {
     }
     row.save();
   } else {
-    await new Promise((resolve, reject) => {
-      trainInfoSheet.addRow(rowData, (err, row) => {
-        if (err) {
-          reject(new Error("failed to update spreadsheet"));
-          return;
-        }
-        row.save();
-        resolve();
-      });
-    });
+    trainInfoSheet.addRow(rowData);
   }
 }
 
@@ -98,18 +62,10 @@ async function submitTravelRequest(formSubmission) {
   };
 
   await setAuth();
-  const { worksheets: [travelRequestSheet]} = await getInfoAndWorksheets();
+  const [travelRequestSheet] = getWorksheets();
+  const newRow = await travelRequestSheet.addRow(rowData);
 
-  return await new Promise((resolve, reject) => {
-    travelRequestSheet.addRow(rowData, (err, row) => {
-      if (err) {
-        reject(new Error("failed to update spreadsheet"));
-        return;
-      }
-      row.save();
-      resolve();
-    });
-  });
+  newRow.save();
 }
 
 module.exports = { submitTravelRequest, updateTrainInfo, getTrainInfoForUser };
