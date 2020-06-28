@@ -1,7 +1,7 @@
 {
   "name": "travel-bot",
   "version": "1.0.0",
-  "description": "A slack app travel assistant for booking trains and accommodation",
+  "description": "A travel assistant integrated into Slack for HR teams and employees to easily book trains and accommodations via Google Sheets",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
