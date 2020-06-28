@@ -1,6 +1,10 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
-const { GOOGLE_PRIVATE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SPREADSHEET_KEY } = require("./config");
+const {
+  GOOGLE_PRIVATE_KEY,
+  GOOGLE_SERVICE_ACCOUNT_EMAIL,
+  GOOGLE_SPREADSHEET_KEY,
+} = require("./config");
 
 const doc = new GoogleSpreadsheet(GOOGLE_SPREADSHEET_KEY);
 
@@ -18,7 +22,7 @@ async function getWorksheets() {
 
 async function findMatchingRow(worksheet, email) {
   const rows = await worksheet.getRows();
-  return rows.find(row => row.email === email);
+  return rows.find((row) => row.email === email);
 }
 
 async function getTrainInfoForUser(email) {
@@ -45,7 +49,10 @@ async function updateTrainInfo(formSubmission) {
 async function submitTravelRequest(formSubmission) {
   await setAuth();
   const [travelRequestSheet] = await getWorksheets();
-  const newRow = await travelRequestSheet.addRow({ timestamp: Date.now(), ...formSubmission });
+  const newRow = await travelRequestSheet.addRow({
+    timestamp: Date.now(),
+    ...formSubmission,
+  });
 
   newRow.save();
 }

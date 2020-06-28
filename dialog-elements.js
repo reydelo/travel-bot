@@ -3,7 +3,7 @@ module.exports = {
     label: "BahnCard Number",
     type: "text",
     name: "bahnCardNumber",
-    optional: true
+    optional: true,
   },
   bahnCardType: {
     label: "BahnCard Type",
@@ -16,8 +16,8 @@ module.exports = {
       { label: "BahnCard 100", value: "BahnCard 100" },
       { label: "BahnCard Business 25", value: "BahnCard Business 25" },
       { label: "BahnCard Business 50", value: "BahnCard Business 50" },
-      { label: "BahnCard Business 100", value: "BahnCard Business 100" }
-    ]
+      { label: "BahnCard Business 100", value: "BahnCard Business 100" },
+    ],
   },
   destinationStation: {
     label: "Train Station that you frequently visit",
@@ -45,19 +45,19 @@ module.exports = {
     label: "Outward Journey Date",
     name: "outwardDate",
     type: "text",
-    hint: "Format: DD.MM.YYYY"
+    hint: "Format: DD.MM.YYYY",
   },
   returnDate: {
     label: "Return Journey Date",
     name: "returnDate",
     type: "text",
-    hint: "Format: DD.MM.YYYY"
+    hint: "Format: DD.MM.YYYY",
   },
   travelMessage: {
     label: "Additional message to Office Management",
     type: "textarea",
     name: "travelMessage",
-    optional: true
+    optional: true,
   },
   travelReason: {
     label: "Reason for Traveling",
@@ -74,9 +74,9 @@ module.exports = {
       { label: "Interviews", value: "Interviews" },
       {
         label: "External Meetings (with partners, investors)",
-        value: "External Meetings"
+        value: "External Meetings",
       },
-      { label: "Other (please specify below)", value: "Other" }
-    ]
-  }
+      { label: "Other (please specify below)", value: "Other" },
+    ],
+  },
 };
