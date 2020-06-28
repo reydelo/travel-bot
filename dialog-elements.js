@@ -1,14 +1,14 @@
 module.exports = {
-  bahncard_number: {
+  bahnCardNumber: {
     label: "BahnCard Number",
     type: "text",
-    name: "bahncard_number",
+    name: "bahnCardNumber",
     optional: true
   },
-  bahncard_type: {
+  bahnCardType: {
     label: "BahnCard Type",
     type: "select",
-    name: "bahncard_type",
+    name: "bahnCardType",
     optional: true,
     options: [
       { label: "BahnCard 25", value: "BahnCard 25" },
@@ -19,84 +19,50 @@ module.exports = {
       { label: "BahnCard Business 100", value: "BahnCard Business 100" }
     ]
   },
-  destination_station: {
+  destinationStation: {
     label: "Train Station that you frequently visit",
-    name: "destination_station",
+    name: "destinationStation",
     type: "text",
   },
-  destination_departure_time: {
+  destinationDepartureTime: {
     label: "Destination Departure Time",
-    name: "destination_departure_time",
+    name: "destinationDepartureTime",
     type: "text",
     hint: "Format: 00:00 (24 Hour)",
   },
-  home_departure_time: {
+  homeDepartureTime: {
     label: "Home Departure Time",
-    name: "home_departure_time",
+    name: "homeDepartureTime",
     type: "text",
     hint: "Format: 00:00 (24 Hour)",
   },
-  home_station: {
+  homeStation: {
     label: "Train Station in your home city",
-    name: "home_station",
+    name: "homeStation",
     type: "text",
   },
-  outward_arrival_station: {
-    label: "Outward Journey Arrival Station",
-    name: "outward_arrival_station",
-    type: "text",
-  },
-  outward_date: {
+  outwardDate: {
     label: "Outward Journey Date",
-    name: "outward_date",
+    name: "outwardDate",
     type: "text",
-    value: '05.25.2022',
     hint: "Format: DD.MM.YYYY"
   },
-  outward_departure_station: {
-    label: "Outward Journey Departure Station",
-    name: "outward_departure_station",
-    type: "text",
-  },
-  outward_departure_time: {
-    label: "Outward Journey Departure Time",
-    name: "outward_departure_time",
-    type: "text",
-    hint: "Format: 00:00 (24 Hour)"
-  },
-  return_arrival_station: {
-    label: "Return Journey Arrival Station",
-    name: "return_arrival_station",
-    type: "text"
-  },
-  return_date: {
+  returnDate: {
     label: "Return Journey Date",
-    name: "return_date",
+    name: "returnDate",
     type: "text",
-    value: '05.25.2021',
     hint: "Format: DD.MM.YYYY"
   },
-  return_departure_station: {
-    label: "Return Journey Departure Station",
-    name: "return_departure_station",
-    type: "text"
-  },
-  return_departure_time: {
-    label: "Return Journey Departure Time",
-    name: "return_departure_time",
-    type: "text",
-    hint: "Format: 00:00 (24 Hour)"
-  },
-  travel_message: {
+  travelMessage: {
     label: "Additional message to Office Management",
     type: "textarea",
-    name: "travel_message",
+    name: "travelMessage",
     optional: true
   },
-  travel_reason: {
+  travelReason: {
     label: "Reason for Traveling",
     type: "select",
-    name: "travel_reason",
+    name: "travelReason",
     value: "Team Meetings",
     options: [
       { label: "Team Meetings", value: "Team Meetings" },

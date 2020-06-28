@@ -51,17 +51,9 @@ const postWithSlackDialog = (dialog) => {
 };
 
 app.post('/update-train-info', urlencodedParser, async (req, res) => {
+    // immediately respond with a empty 200 response to let Slack know the command was received
+    res.send('');
     const { trigger_id, user_id, channel_id } = req.body;
-    const {
-      home_station,
-      destination_station,
-      home_departure_time,
-      destination_departure_time,
-      bahncard_type,
-      bahncard_number
-    } = dialogElements;
-
-    res.send('Loading your data from Google Drive....');
 
     const slackUserEmail = await users
     .findUser(user_id)
@@ -76,32 +68,35 @@ app.post('/update-train-info', urlencodedParser, async (req, res) => {
                     callback_id: slackCommands.updateTrainInfo,
                     submit_label: 'Submit',
                     elements: [
-                        { ...home_station, value: row.homestation},
-                        { ...destination_station, value: row.destinationstation },
-                        { ...home_departure_time, value: row.homedeparturetime },
-                        { ...destination_departure_time, value: row.destinationdeparturetime },
-                        { ...bahncard_type, value: row.bahncardtype },
-                        { ...bahncard_number, value: row.bahncardnumber },
+                        { ...dialogElements.homeStation, value: row.homeStation},
+                        { ...dialogElements.destinationStation, value: row.destinationStation },
+                        { ...dialogElements.homeDepartureTime, value: row.homeDepartureTime },
+                        { ...dialogElements.destinationDepartureTime, value: row.destinationDepartureTime },
+                        { ...dialogElements.bahnCardType, value: row.bahnCardType },
+                        { ...dialogElements.bahnCardNumber, value: row.bahnCardNumber },
                     ]
                 })
             };
 
             postWithSlackDialog(dialog);
         })
-        .catch(err => {
+        .catch((err) => {
             respondWithEphemeral({
                 token: SLACK_ACCESS_TOKEN,
-                text: "Error while getting train info",
+                text: `Error while getting train info: ${err.message}`,
                 channel: channel_id,
-                user: user_id
+                user: user_id,
             });
         });
 
 });
 
 app.post('/train-request', urlencodedParser, (req, res) => {
+    // immediately respond with a empty 200 response to let Slack know the command was received
+    res.send('');
     const { trigger_id } = req.body;
-    const { outward_date, return_date, travel_reason, travel_message } = dialogElements;
+    const { outwardDate, returnDate, travelReason, travelMessage } = dialogElements;
+    const elements = [travelReason, outwardDate, returnDate, travelMessage];
 
     const dialog = {
       trigger_id,
@@ -109,12 +104,7 @@ app.post('/train-request', urlencodedParser, (req, res) => {
         title: "Submit a train request",
         callback_id: slackCommands.requestTrain,
         submit_label: "Submit",
-        elements: [
-          travel_reason,
-          outward_date,
-          return_date,
-          travel_message
-        ]
+        elements
       })
     };
 
@@ -122,8 +112,7 @@ app.post('/train-request', urlencodedParser, (req, res) => {
 });
 
 app.post('/interactive', urlencodedParser, (req, res) => {
-    // immediately respond with a empty 200 response to let
-    // Slack know the command was received
+    // immediately respond with a empty 200 response to let Slack know the command was received
     res.send('');
 
     const payload = JSON.parse(req.body.payload);
@@ -153,7 +142,7 @@ const processTrainRequest = async ({ channel, user, submission }) => {
         return data.user.profile.email;
     })
 
-    submitTravelRequest({ ...submission, email: slackUserEmail, travel_type: 'train'})
+    submitTravelRequest({ ...submission, email: slackUserEmail, travelType: 'train'})
         .then(() => {
             return respondWithEphemeral({
                 token: SLACK_ACCESS_TOKEN,
