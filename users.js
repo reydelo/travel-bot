@@ -1,7 +1,7 @@
 const qs = require('querystring');
 const axios = require('axios');
 
-const { SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constants');
+const { SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./config');
 
 const findUser = (slackUserId) => {
     const body = { token: SLACK_ACCESS_TOKEN, user: slackUserId };

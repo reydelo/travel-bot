@@ -1,12 +1,14 @@
 const { GoogleSpreadsheet } = require("google-spreadsheet");
 
-const credentials = require("./google-generated-credentials.json");
-const { GOOGLE_SPREADSHEET_KEY } = require("./constants.js");
+const { GOOGLE_PRIVATE_KEY, GOOGLE_SERVICE_ACCOUNT_EMAIL, GOOGLE_SPREADSHEET_KEY } = require("./config");
 
 const doc = new GoogleSpreadsheet(GOOGLE_SPREADSHEET_KEY);
 
 async function setAuth() {
-  await doc.useServiceAccountAuth(credentials);
+  await doc.useServiceAccountAuth({
+    client_email: GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    private_key: GOOGLE_PRIVATE_KEY,
+  });
 }
 
 async function getWorksheets() {
@@ -62,7 +64,7 @@ async function submitTravelRequest(formSubmission) {
   };
 
   await setAuth();
-  const [travelRequestSheet] = getWorksheets();
+  const [travelRequestSheet] = await getWorksheets();
   const newRow = await travelRequestSheet.addRow(rowData);
 
   newRow.save();

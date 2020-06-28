@@ -50,6 +50,7 @@ module.exports = {
     label: "Outward Journey Date",
     name: "outward_date",
     type: "text",
+    value: '05.25.2022',
     hint: "Format: DD.MM.YYYY"
   },
   outward_departure_station: {
@@ -72,6 +73,7 @@ module.exports = {
     label: "Return Journey Date",
     name: "return_date",
     type: "text",
+    value: '05.25.2021',
     hint: "Format: DD.MM.YYYY"
   },
   return_departure_station: {

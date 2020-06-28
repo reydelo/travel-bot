@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const qs = require('querystring');
 const axios = require('axios');
 
-const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./constants.js');
+const { PORT, SLACK_ACCESS_TOKEN, SLACK_API_URL } = require('./config');
 const dialogElements = require('./dialog-elements.js');
 const users  = require('./users.js');
 const { submitTravelRequest, updateTrainInfo, getTrainInfoForUser } = require('./google-spreadsheet');
